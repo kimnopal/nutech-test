@@ -1,11 +1,13 @@
 import express from "express";
 import path from "path";
 import dotenv from "dotenv";
+import swaggerUi from "swagger-ui-express";
 import membershipRoutes from "./routes/membership.routes";
 import informationRoutes from "./routes/information.routes";
 import transactionRoutes from "./routes/transaction.routes";
 import { errorHandler, notFoundHandler } from "./middlewares/error.middleware";
 import { testConnection } from "./config/database";
+import { swaggerSpec } from "./config/swagger";
 
 dotenv.config();
 
@@ -25,6 +27,15 @@ app.use("/", membershipRoutes);
 app.use("/", informationRoutes);
 app.use("/", transactionRoutes);
 
+app.use(
+  "/",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, {
+    customCss: ".swagger-ui .topbar { display: none }",
+    customSiteTitle: "NUTECH API Documentation",
+  })
+);
+
 app.use(notFoundHandler);
 app.use(errorHandler);
 
@@ -38,6 +49,7 @@ async function startServer() {
 
     app.listen(PORT, () => {
       console.log(`\nServer running on http://localhost:${PORT}`);
+      console.log(`Swagger API Docs: http://localhost:${PORT}/api-docs`);
       console.log(`Uploads served from /${UPLOAD_DIR}`);
       console.log("\nAvailable endpoints:");
       console.log("  POST /registration        - Register new user");
