@@ -10,6 +10,7 @@ Backend RESTful API untuk keperluan Take Home Test yang dibangun menggunakan Exp
 - [Entity Relationship Diagram (ERD)](#-entity-relationship-diagram-erd)
 - [Instalasi](#-instalasi)
 - [Menjalankan Aplikasi](#-menjalankan-aplikasi)
+- [Docker](#-docker)
 - [API Endpoints](#-api-endpoints)
 - [Contoh Penggunaan API](#-contoh-penggunaan-api)
 - [Struktur Project](#-struktur-project)
@@ -301,6 +302,130 @@ npm start
 
 ---
 
+## 🐳 Docker
+
+Aplikasi dapat dijalankan menggunakan Docker untuk kemudahan deployment.
+
+### Prerequisites
+
+- Docker Engine 20+
+- Docker Compose v2+
+
+### Quick Start
+
+**Build dan jalankan semua containers:**
+
+```bash
+docker-compose up -d --build
+```
+
+Perintah ini akan:
+
+- Build image aplikasi Node.js
+- Menjalankan container PostgreSQL 16
+- Menjalankan container aplikasi
+- Inisialisasi database dengan schema dan data awal
+
+**Akses aplikasi:**
+
+```
+http://localhost:3000
+```
+
+### Docker Commands
+
+| Perintah                          | Deskripsi                                       |
+| --------------------------------- | ----------------------------------------------- |
+| `docker-compose up -d --build`    | Build dan jalankan semua services               |
+| `docker-compose up -d`            | Jalankan tanpa rebuild                          |
+| `docker-compose down`             | Stop semua containers                           |
+| `docker-compose down -v`          | Stop dan hapus volumes (termasuk data database) |
+| `docker-compose logs -f`          | Lihat logs semua services                       |
+| `docker-compose logs -f app`      | Lihat logs aplikasi saja                        |
+| `docker-compose logs -f postgres` | Lihat logs database saja                        |
+| `docker-compose ps`               | Lihat status containers                         |
+| `docker-compose restart app`      | Restart aplikasi                                |
+
+### Environment Variables
+
+Konfigurasi dapat diubah melalui environment variables saat menjalankan docker-compose:
+
+```bash
+DB_PASSWORD=secretpassword JWT_SECRET=my-secure-jwt-secret docker-compose up -d --build
+```
+
+| Variable         | Default              | Deskripsi                      |
+| ---------------- | -------------------- | ------------------------------ |
+| `PORT`           | 3000                 | Port aplikasi                  |
+| `DB_HOST`        | postgres             | Host database (nama container) |
+| `DB_PORT`        | 5432                 | Port database                  |
+| `DB_NAME`        | sims_ppob            | Nama database                  |
+| `DB_USER`        | postgres             | Username database              |
+| `DB_PASSWORD`    | postgres             | Password database              |
+| `JWT_SECRET`     | your-super-secret... | Secret key untuk JWT           |
+| `JWT_EXPIRES_IN` | 12h                  | Masa berlaku JWT token         |
+| `UPLOAD_DIR`     | public/uploads       | Direktori upload file          |
+
+### Struktur Docker
+
+```
+nutech-test/
+├── Dockerfile              # Multi-stage build untuk Node.js app
+├── docker-compose.yml      # Orchestration file
+├── .dockerignore           # File yang diabaikan saat build
+└── docker/
+    └── init-db.sql         # Script inisialisasi database
+```
+
+### Volumes
+
+Docker Compose menggunakan named volumes untuk persistensi data:
+
+| Volume          | Deskripsi               |
+| --------------- | ----------------------- |
+| `postgres_data` | Data PostgreSQL         |
+| `uploads_data`  | File yang diupload user |
+
+### Health Checks
+
+Kedua services memiliki health check:
+
+- **PostgreSQL**: Menggunakan `pg_isready` untuk memastikan database siap menerima koneksi
+- **Application**: Mengecek endpoint `/banner` untuk memastikan aplikasi berjalan
+
+### Troubleshooting
+
+**Container tidak bisa start:**
+
+```bash
+# Lihat logs untuk error
+docker-compose logs
+
+# Rebuild dari awal
+docker-compose down -v
+docker-compose up -d --build
+```
+
+**Database connection error:**
+
+```bash
+# Pastikan container postgres healthy
+docker-compose ps
+
+# Restart services
+docker-compose restart
+```
+
+**Reset database:**
+
+```bash
+# Hapus volume database dan jalankan ulang
+docker-compose down -v
+docker-compose up -d --build
+```
+
+---
+
 ## 📡 API Endpoints
 
 ### Public Endpoints (Tanpa Token)
@@ -519,10 +644,15 @@ nutech-test/
 │       └── *.ts                  # Zod validation schemas
 ├── sql/
 │   └── migrations/               # SQL migration files
+├── docker/
+│   └── init-db.sql               # Script inisialisasi database Docker
 ├── public/
 │   └── uploads/                  # Directory upload files
 ├── docs/                         # API documentation
 ├── dist/                         # Compiled JavaScript
+├── Dockerfile                    # Docker image build file
+├── docker-compose.yml            # Docker Compose orchestration
+├── .dockerignore                 # File yang diabaikan saat Docker build
 ├── package.json
 ├── tsconfig.json
 └── .env
