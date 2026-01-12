@@ -46,6 +46,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-in-production}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-12h}
       UPLOAD_DIR: ${UPLOAD_DIR:-public/uploads}
+      BASE_URL: ${BASE_URL:-http://localhost:3000}
     volumes:
       - uploads_data:/app/public/uploads
     depends_on:
